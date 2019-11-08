@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Google Play Store</title>
+    <!-- jquery -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- datatable  -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+    <!-- personalized stuff -->
+    <link rel="stylesheet" type ="text/css" href="styles.css">
+    <!-- <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /> -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <div class="container">
+        <!--Table-->
+        <!-- <table class="table table-hover table-responsive table-striped table-sm" id="table"> -->
+        <table id="table" class="table table-striped table-bordered">
+            <!--Table head-->
+            <tbody>
+                <thead class="thead-dark">
+                    <tr>
+                        <th>App</th>
+                        <th>Category</th>
+                        <th>Rating</th>
+                        <th>Reviews</th>
+                        <th>Size</th>
+                        <th>Installs</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>Content Rating</th>
+                        <th>Genres</th>
+                        <th>Last Updated</th>
+                        <th>Current Ver</th>
+                        <th>Android Ver</th>
+                    </tr>
+                </thead>
+
+            <tfoot>
+                <tr>
+                    <th>App</th>
+                    <th>Category</th>
+                    <th>Rating</th>
+                    <th>Reviews</th>
+                    <th>Size</th>
+                    <th>Installs</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Content Rating</th>
+                    <th>Genres</th>
+                    <th>Last Updated</th>
+                    <th>Current Ver</th>
+                    <th>Android Ver</th>
+                </tr>
+            </tfoot>
+
+            </tbody>
+        </table>
+        <!--Table-->
+    </div>
+    
+    <!--- Firebase Script -->
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/6.6.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.6.1/firebase-database.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script>
+
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyD7WEvYbeWIyrRTfq23pUUtQAJGSTvEPyg",
+        authDomain: "play-store-b3129.firebaseapp.com",
+        databaseURL: "https://play-store-b3129.firebaseio.com",
+        projectId: "play-store-b3129",
+        storageBucket: "play-store-b3129.appspot.com",
+        messagingSenderId: "181066460477",
+        appId: "1:181066460477:web:c8a75cd906cfbce72d2954"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    var database = firebase.database().ref();
+    database.on('value', function (snapshot) {
+        if (snapshot.exists()) {
+            // var content = '';
+            var dataset = []
+            snapshot.forEach(function (data) {
+                var val = data.val();
+                var element = [val.App,val.Category, val.Rating, val.Reviews, val.Size, val.Installs, val.Price, val.Type, val['Content Rating'], val.Genres, val["Last Updated"], val["Current Ver"],val["Android Ver"]] 
+                dataset.push(element);
+            });
+    
+            // data DataTable
+            $(document).ready( function () {
+                var table = $('#table').DataTable({
+                    // "scrollY": "800px",
+                    // "scrollX": "1000px",
+                    // "scrollCollapse": true,
+                    // "paging": false,
+                    data:dataset,
+                    columns: [
+                        { title: "App", width: "120px"},
+                        { title: "Category", width: "120px" },
+                        { title: "Rating", width: "120px" },
+                        { title: "Reviews.", width: "120px" },
+                        { title: "Size", width: "120px" },
+                        { title: "Installs", width: "120px" },
+                        { title: "Price", width: "120px" },
+                        { title: "Type", width: "120px" },
+                        { title: "Content Rating", width: "120px" },
+                        { title: "Genres", width: "120px" },
+                        { title: "Last Updated", width: "120px" },
+                        { title: "Current Version", width: "120px" },
+                        { tile: "Android Verision", width: "120px"}
+                    ]
+                    // "scrollX": "1800px",
+                    // "scrollY":'50vh',
+                    // "scrollCollapse":true,
+                    // "paging":false
+
+                });//data table
+
+                $('#table tfoot th').each(function(i){
+                    if ($(this).text() != ''){
+                        var select = $('<select style="width: 100px;"><option value=""></option></select>')
+                            .appendTo($(this).empty())
+                            .on( 'change', function () {
+	                            var val = $(this).val();
+					            table.column(i)
+	                            .search( val ? '^'+$(this).val()+'$' : val, true, false )
+	                            .draw();
+                            });
+                            
+                        table.column(i).data().unique().sort().each( function (d) {  
+                        select.append( '<option value="'+d+'">'+d+'</option>' );
+		            });	
+                    }//if text != ''
+                }//tfoot each function
+                );//table tfoot
+                
+                $('#table tfoot th').each(function(){
+                    var title = $('#table thead th').eq($(this).index()).text();
+                    $(this).html('<input type= "text" placeholder = "Search' + title +'"/>')
+            }); //document ready
+            table.columns().every(function(){
+                var datatablecolumn= this;
+
+                $(this.footer()).find('input').on('keyup change',function(){
+                    datatablecolumn.search(this.value).draw();
+                });
+            });
+        });
+        }
+    });
+
+
+   
+    </script>
+    
+</body>
+
+</html>
+<!-- TODO: fix the size of the table -->
